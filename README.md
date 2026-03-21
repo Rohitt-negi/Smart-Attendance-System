@@ -1,9 +1,9 @@
 # SmartAttend - AI Face Recognition Attendance System
 
-A smart attendance dashboard powered by **face recognition AI** that runs entirely in your browser. Built using **face-api.js** (TensorFlow.js) for real-time face detection and recognition.
+A smart attendance dashboard powered by **face recognition AI** with a **Python Flask backend** and a modern web frontend.
 
 ![SmartAttend](https://img.shields.io/badge/AI-Face%20Recognition-blue?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Working-green?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-Flask-yellow?style=for-the-badge)
 
 ## Features
 
@@ -13,92 +13,91 @@ A smart attendance dashboard powered by **face recognition AI** that runs entire
 - **Records** — Filterable attendance table with CSV export
 - **Student Management** — View and manage registered students
 
+## Architecture
+
+```
+Browser (HTML/CSS/JS)  ←──REST API──→  Python Flask Backend
+  ├─ Webcam capture                      ├─ OpenCV DNN (SSD ResNet-10)
+  ├─ UI/Dashboard                        ├─ Face embedding extraction
+  ├─ Chart.js charts                     ├─ Cosine similarity matching
+  └─ Camera module                       └─ SQLite database
+```
+
 ## How It Works (ML Concepts)
 
-### 1. Face Detection — SSD MobileNet v1
-- Uses **Single Shot Multibox Detector** with MobileNet v1 backbone
-- Detects face bounding boxes in real-time from webcam feed
-- Confidence threshold: 0.5
+### 1. Face Detection — OpenCV DNN (SSD ResNet-10)
+- Uses **Single Shot Detector** with ResNet-10 backbone
+- Pre-trained Caffe model, auto-downloaded on first run
+- Detects face bounding boxes with confidence scores
 
-### 2. Face Landmarks — 68-Point Model
-- Detects 68 facial landmark points (eyes, nose, mouth, jawline)
-- Used to align faces before computing descriptors
+### 2. Face Embedding — HOG + Histogram Features
+- Extracts **multi-feature embedding vector** from each detected face:
+  - Pixel intensity histogram (64 bins)
+  - Spatial structure (16×16 resize)
+  - HOG-like gradient features (9 orientation bins × 16 cells)
+  - HSV color histogram
+- Creates a robust feature vector for identity comparison
 
-### 3. Face Recognition — 128-Dimensional Embeddings
-- Each face is converted to a **128-dimensional feature vector** (descriptor)
-- These embeddings capture unique facial characteristics
-- Multiple samples (3) per student improve accuracy
-
-### 4. Face Matching — Euclidean Distance
-- Compares detected face descriptors against stored descriptors
-- Uses **Euclidean distance** as similarity metric
-- Threshold ≤ 0.6 for positive match (lower = more similar)
+### 3. Face Matching — Cosine Similarity
+- Compares detected face embeddings against stored embeddings
+- Uses **cosine similarity** as the metric (0 to 1)
+- Match threshold: > 0.75
 
 ## Setup
 
-### 1. Start a Local Server
-The app needs to be served via HTTP (not file://) for webcam and model loading:
-
 ```bash
-# Using Python (recommended)
-cd Attendence
-python3 -m http.server 8080
+# 1. Install Python dependencies
+pip install -r requirements.txt
 
-# Or using Node.js
-npx -y serve .
+# 2. Start the server
+python3 app.py
+
+# 3. Open in browser
+# Navigate to http://localhost:5000
 ```
 
-### 2. Open in Browser
-Navigate to `http://localhost:8080`
-
-### 3. Allow Camera Access
-Click "Allow" when prompted for camera permissions.
+The face detection model (~10MB) will auto-download on first run.
 
 ## Usage
 
-1. **Register Students** — Go to Register tab → Fill details → Start camera → Capture 3 face samples → Submit
-2. **Mark Attendance** — Go to Mark Attendance → Start Recognition → Students are automatically marked present when recognized
-3. **View Records** — Check Records tab to see attendance logs, filter by date, export CSV
-4. **Dashboard** — View real-time stats and charts
+1. **Register Students**: Register tab → Fill details → Start camera → Capture 3 face photos → Submit
+2. **Mark Attendance**: Mark Attendance tab → Start Recognition → Faces auto-detected and matched
+3. **View Records**: Records tab → Filter by date → Export CSV
+4. **Dashboard**: Real-time stats and charts
 
 ## Tech Stack
 
 | Component | Technology |
 |-----------|-----------|
-| Face Detection | face-api.js (SSD MobileNet v1) |
-| Face Recognition | face-api.js (128-dim embeddings) |
+| Backend | Python + Flask |
+| Face Detection | OpenCV DNN (SSD ResNet-10) |
+| Face Matching | NumPy (Cosine Similarity) |
+| Database | SQLite |
+| Frontend | HTML + CSS + JavaScript |
 | Charts | Chart.js |
-| Storage | IndexedDB (browser) |
 | Styling | Custom CSS (Dark Glassmorphism) |
-| Icons | Font Awesome 6 |
-| Fonts | Inter (Google Fonts) |
-
-## Browser Compatibility
-
-- Chrome 80+ ✅
-- Firefox 78+ ✅
-- Edge 80+ ✅
-- Safari 14+ ✅
 
 ## Project Structure
 
 ```
 Attendence/
-├── index.html              # Main application
-├── README.md               # This file
-├── css/
-│   └── styles.css          # Dark theme design system
-└── js/
-    ├── app.js              # App controller & navigation
-    ├── db.js               # IndexedDB persistence layer
-    ├── faceRecognition.js  # face-api.js integration
-    ├── dashboard.js        # Stats & Chart.js charts
-    ├── register.js         # Student registration + webcam
-    ├── attendance.js       # Live recognition engine
-    ├── records.js          # Records table & CSV export
-    └── students.js         # Student management
+├── app.py                  # Flask backend + face recognition
+├── requirements.txt        # Python dependencies
+├── attendance.db           # SQLite database (auto-created)
+├── known_faces/            # Face image storage
+├── templates/
+│   └── index.html          # Main web page
+├── static/
+│   ├── css/
+│   │   └── styles.css      # Dark theme design system
+│   └── js/
+│       ├── api.js           # API layer (fetch calls to Flask)
+│       ├── camera.js        # Webcam handling
+│       ├── app.js           # App controller + navigation
+│       ├── dashboard.js     # Stats + charts
+│       ├── register.js      # Student registration
+│       ├── attendance.js    # Live recognition
+│       ├── records.js       # Records + CSV export
+│       └── students.js      # Student management
+└── README.md
 ```
-
-## License
-
-MIT — Built as an ML project demonstration.
