@@ -17,7 +17,7 @@ from PIL import Image
 from datetime import datetime, date, timedelta
 
 app = Flask(__name__)
-CORS(app)
+CORS(app) 
 
 # ─── Configuration ───
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'attendance.db')
@@ -274,6 +274,8 @@ def register_student():
 
     if len(embeddings) == 0:
         conn.close()
+        # Log the specific reason if possible
+        print(f"❌ Registration failed: No faces detected in {len(photos)} photos for {name}")
         return jsonify({'error': 'No face detected in the photos. Please try again with clearer images.'}), 400
 
     # Average embedding for better accuracy
@@ -512,12 +514,15 @@ def get_stats():
         'weekly': weekly, 'recent': [dict(r) for r in recent]
     })
 
-
+ 
 # ─── Main ───
 
+# ─── Global Initialization ───
+# These run when the module is imported (e.g., by Gunicorn on Render)
+init_db()
+load_face_net()
+
 if __name__ == '__main__':
-    init_db()
-    load_face_net()
     print("=" * 50)
     print("🧠 SmartAttend - AI Face Recognition System")
     print("   Backend: Python + OpenCV DNN + Flask")
@@ -526,3 +531,4 @@ if __name__ == '__main__':
     print(f"🌐 Server: http://localhost:5000")
     print("=" * 50)
     app.run(debug=True, host='0.0.0.0', port=5000)
+    

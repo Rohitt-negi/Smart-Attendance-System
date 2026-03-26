@@ -26,11 +26,13 @@ Browser (HTML/CSS/JS)  ←──REST API──→  Python Flask Backend
 ## How It Works (ML Concepts)
 
 ### 1. Face Detection — OpenCV DNN (SSD ResNet-10)
+
 - Uses **Single Shot Detector** with ResNet-10 backbone
 - Pre-trained Caffe model, auto-downloaded on first run
 - Detects face bounding boxes with confidence scores
 
 ### 2. Face Embedding — HOG + Histogram Features
+
 - Extracts **multi-feature embedding vector** from each detected face:
   - Pixel intensity histogram (64 bins)
   - Spatial structure (16×16 resize)
@@ -39,6 +41,7 @@ Browser (HTML/CSS/JS)  ←──REST API──→  Python Flask Backend
 - Creates a robust feature vector for identity comparison
 
 ### 3. Face Matching — Cosine Similarity
+
 - Compares detected face embeddings against stored embeddings
 - Uses **cosine similarity** as the metric (0 to 1)
 - Match threshold: > 0.75
@@ -67,15 +70,15 @@ The face detection model (~10MB) will auto-download on first run.
 
 ## Tech Stack
 
-| Component | Technology |
-|-----------|-----------|
-| Backend | Python + Flask |
-| Face Detection | OpenCV DNN (SSD ResNet-10) |
-| Face Matching | NumPy (Cosine Similarity) |
-| Database | SQLite |
-| Frontend | HTML + CSS + JavaScript |
-| Charts | Chart.js |
-| Styling | Custom CSS (Dark Glassmorphism) |
+| Component      | Technology                      |
+| -------------- | ------------------------------- |
+| Backend        | Python + Flask                  |
+| Face Detection | OpenCV DNN (SSD ResNet-10)      |
+| Face Matching  | NumPy (Cosine Similarity)       |
+| Database       | SQLite                          |
+| Frontend       | HTML + CSS + JavaScript         |
+| Charts         | Chart.js                        |
+| Styling        | Custom CSS (Dark Glassmorphism) |
 
 ## Project Structure
 
